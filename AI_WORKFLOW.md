@@ -30,3 +30,6 @@ No tests have been executed yet. A specific Basic Go concurrency test and k6 loa
 
 ## Final Ownership Notes
 The human developer is strictly controlling the scope, actively reviewing AI output, and explicitly preventing unapproved implementation or feature expansion beyond the case study requirements.
+
+## Agent Governance Refinement
+During the scaffolding phase, the human developer directed the refinement of the agent governance files (AGENTS.md, .agents/workflows/, and .agents/skills/). These documents now explicitly define agent roles, strict workflow constraints, and skill expectations (especially regarding race condition safety). **No implementation code has been generated at this stage.**
