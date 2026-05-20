@@ -107,3 +107,33 @@ During the runtime smoke test (Frontend at `http://localhost:5173`, Backend at `
 - HTTP-level k6 validation is still pending.
 - Docker Compose validation is still pending.
 - The CORS fix was limited specifically to the local development frontend origin. Full system production validation is not complete.
+
+## Docker Compose Phase
+The Docker Compose phase successfully containerized the application for local runtime validation.
+
+**Docker files created:** `backend/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/.dockerignore`, `frontend/nginx.conf`, and `docker-compose.yml`.
+
+**Architecture:** 
+- `postgres`: PostgreSQL 16 Alpine image. Maps port `5433:5432`.
+- `backend`: Multi-stage Go build (`golang:1.22-alpine` builder to `alpine:3.20` runtime). Connects to PostgreSQL using `postgres:5432`. Maps port `8080:8080`.
+- `frontend`: Multi-stage Vite build (`node:20-alpine` builder to `nginx:1.27-alpine` runtime). Nginx handles SPA fallback. Maps port `5173:80`.
+
+**Environment & Network:**
+- Backend `DATABASE_URL` references the Docker service name (`postgres:5432`).
+- Frontend `VITE_API_BASE_URL` is baked in at build-time using the default `http://localhost:8080`. The browser resolves this correctly on the host machine.
+- Existing local backend CORS configuration correctly accommodates the browser's origin (`http://localhost:5173`).
+
+**Migration Strategy:**
+- Initial migration uses the standard `postgres` image entrypoint by mapping the `001_create_campaigns_table.up.sql` file into `/docker-entrypoint-initdb.d/`.
+- No separate migration service or application-level startup migration was used. Resetting the DB requires `docker compose down -v`.
+
+**Validation Results:**
+- `docker compose config` and `docker compose up --build` succeeded perfectly.
+- Database initialized automatically, and the backend service connected without issue (`/health` OK).
+- The frontend was accessible at `http://localhost:5173`.
+- Smoke testing confirmed List, Create, Detail, Impression, Update, Polling, and Delete features functioned exactly as they did natively. No CORS errors, connection failures, or container crashes occurred.
+
+**Honesty Boundaries:**
+- This was local Docker Compose validation, not a scalable production deployment.
+- HTTP-level k6 load testing is still pending.
+- Multi-instance testing is still pending.
