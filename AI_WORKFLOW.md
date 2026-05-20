@@ -73,19 +73,9 @@ No backend code was generated. No migration SQL was created. No tests were creat
 ## Backend Implementation Phase
 Backend implementation was created incrementally. Files were generated in controlled phases. The backend currently compiles with `go test ./...`. The compile check does not mean functional tests exist. No Go test files have been created yet. No race condition/concurrency test has been executed yet. No k6 test has been executed yet. No Docker setup exists yet. Migration SQL exists but has not been executed. Manual API smoke testing is planned for the validation phase.
 
-## Backend Validation
-- Backend integration tests were executed with `TEST_DATABASE_URL` against a real local PostgreSQL test database.
-- Basic integration tests passed.
-- The critical concurrency test was executed against real PostgreSQL.
-- The concurrency test scenario used:
-  - initial budget = 10
-  - 100 concurrent impression attempts
-  - accepted:true count = 10
-  - final remaining_budget = 0
-  - final total_impressions = 10
-  - final spent_budget = 10
-  - final status = paused
-- This provides backend service/repository-level evidence that the PostgreSQL atomic conditional update protects the budget from going negative under concurrent attempts.
-- Explicitly state that this is not yet HTTP-level/k6 validation.
-- Explicitly state that k6 testing is still pending.
-- Explicitly state that Docker Compose validation is still pending.
+## Backend Validation Phase
+- **Setup & Environment:** PostgreSQL was installed locally on Windows. A Turkish locale issue causing `initdb` failure was resolved by using the `C` locale. `psql` was executed via full path. `gowit_ad_platform` and `gowit_ad_platform_test` databases were created.
+- **Migration & Runtime Validation:** Migrations applied successfully with pgcrypto; schemas and constraints matched plans perfectly. Backend started successfully with `DATABASE_URL`, config validation worked properly, and `GET /health` returned `200 OK`.
+- **Manual Smoke Test:** All 7 endpoints (`POST /campaigns`, `GET /campaigns`, `GET /campaigns/:id`, `GET /stats/:id`, `POST /impression/:id`, `DELETE /campaigns/:id`) were validated. Sequential budget exhaustion succeeded (status updated to `paused`), extra impressions returned `budget_exhausted` cleanly, and soft deletes accurately mapped to 404s.
+- **Integration & Concurrency Testing:** `go test ./...` and `go test -v ./tests` passed against `TEST_DATABASE_URL`. The critical concurrency test proved the PostgreSQL atomic conditional update works: 100 concurrent attempts on a budget of 10 resulted in exactly 10 accepted impressions, 90 rejected impressions, final remaining budget of 0, and campaign paused without negative budgets.
+- **Pending Validation:** This is strictly backend service/repository-level validation. HTTP-level k6 load testing, Docker Compose validation, multi-instance production validation, and frontend validation are still pending.
