@@ -42,3 +42,29 @@ A final master prompt was prepared before implementation started, defining the A
 
 ## Documentation and Skill Refinement
 Documentation and agent skill files were refined before implementation. The goal was to strengthen future agent guidance and reviewer-facing documentation. The work covered `README.md`, AI context, backend/frontend/race-condition/Docker/k6/documentation skills, and `docs/` planning files. The `initial_budget` / `remaining_budget` distinction was captured in `docs/database-design.md` for future implementation. No implementation or tests were produced during this phase.
+
+## Backend Planning Phase
+Backend planning was completed before implementation. The API contract was refined around a narrow 7-endpoint MVP:
+- `GET /campaigns`
+- `POST /campaigns`
+- `GET /campaigns/:id`
+- `PUT /campaigns/:id`
+- `DELETE /campaigns/:id`
+- `POST /impression/:id`
+- `GET /stats/:id`
+
+Campaign create accepts a general budget field, while persistence maps it to `initial_budget` and `remaining_budget`. `PUT /campaigns/:id` will not update budget in MVP. `DELETE /campaigns/:id` is soft delete using `deleted_at`. Campaign ID was planned as UUID. Budget uses INTEGER units because each successful impression deducts 1 unit. `spent_budget` is derived as `initial_budget` - `remaining_budget` and is not stored.
+
+PostgreSQL atomic conditional update remains the preferred strategy for `POST /impression/:id`. Unsafe read-then-update logic remains forbidden. In-memory Go mutex remains rejected as the final multi-instance-safe solution.
+
+`chi` was selected as the preferred router direction. `pgxpool` was selected as the preferred PostgreSQL connection direction. GORM/heavy ORM remains rejected.
+
+Backend tests were planned, with `impression_concurrency_test.go` as the most critical test. The concurrency test target remains:
+- initial budget = 10
+- 100 concurrent impression attempts
+- remaining_budget = 0
+- impression_count = 10
+- status = paused
+- budget never negative
+
+No backend code was generated. No migration SQL was created. No tests were created or executed. No Docker, frontend, or k6 files were generated.

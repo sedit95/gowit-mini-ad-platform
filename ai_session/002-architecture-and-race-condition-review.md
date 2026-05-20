@@ -21,3 +21,6 @@ No implementation has started yet, and no tests have been executed.
 
 ## Documentation and Skill Refinement Note
 Pre-implementation documentation and skill files were refined to guide later phases. Backend, frontend, race condition, Docker Compose, k6, documentation, and `docs/` planning expectations were strengthened. The database planning now distinguishes `initial_budget` and `remaining_budget`. The project remains pre-implementation. No application code was generated. No tests were executed.
+
+## Backend Planning Phase Note
+Backend planning decisions were documented before implementation. API contract, database design, race condition strategy, backend architecture, validation/error handling, stats calculation, and test strategy were clarified. The backend will use a simple `handler -> service -> repository` structure. PostgreSQL atomic conditional update is the preferred race condition strategy. `initial_budget` and `remaining_budget` are now fixed as core DB design concepts. `impression_count` only increases after successful budget deduction. `spent_budget` is derived from `initial_budget` - `remaining_budget`. PUT will not update budget in MVP. Soft delete uses `deleted_at`. No backend implementation has started. No migration SQL was created. No tests were executed.
