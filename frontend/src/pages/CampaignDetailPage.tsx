@@ -174,6 +174,29 @@ export function CampaignDetailPage() {
     };
   }, [id]);
 
+  // ── Polling Stats ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!id) return;
+
+    const intervalId = window.setInterval(async () => {
+      try {
+        const data = await getStats(id);
+        setStats(data);
+        setStatsError('');
+      } catch (err: any) {
+        if (err?.status === 404) {
+          setStatsError('Campaign not found.');
+        } else {
+          setStatsError('Stats update failed.');
+        }
+      }
+    }, 3000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [id]);
+
   // ── Refresh Stats ─────────────────────────────────────────────────────────────
   async function handleRefreshStats() {
     if (!id) return;
