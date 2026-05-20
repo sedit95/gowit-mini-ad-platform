@@ -15,6 +15,7 @@ import (
 	"github.com/sedit95/gowit-mini-ad-platform/backend/internal/campaign"
 	"github.com/sedit95/gowit-mini-ad-platform/backend/internal/config"
 	"github.com/sedit95/gowit-mini-ad-platform/backend/internal/db"
+	internalhttp "github.com/sedit95/gowit-mini-ad-platform/backend/internal/http"
 )
 
 func main() {
@@ -44,6 +45,9 @@ func main() {
 
 	// 5. Setup Router
 	r := chi.NewRouter()
+
+	// 5.1 Register CORS Middleware
+	r.Use(internalhttp.CORSMiddleware)
 
 	// 6. Register Health endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
