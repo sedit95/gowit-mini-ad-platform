@@ -38,3 +38,12 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Frontend
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/tsconfig.tsbuildinfo
+frontend/tsconfig.node.tsbuildinfo
+frontend/dist/
+frontend/node_modules/
+*.tsbuildinfo
