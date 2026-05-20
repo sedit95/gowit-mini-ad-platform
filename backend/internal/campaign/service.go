@@ -3,7 +3,6 @@ package campaign
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -178,7 +177,7 @@ func (s *Service) GetStats(ctx context.Context, id uuid.UUID) (*StatsResponse, e
 func (s *Service) RecordImpression(ctx context.Context, id uuid.UUID) (*ImpressionResponse, error) {
 	// 1. Attempt the atomic update via repository.
 	res, err := s.repo.RecordImpression(ctx, id)
-	
+
 	if err == nil {
 		// Atomic update succeeded.
 		return &ImpressionResponse{
