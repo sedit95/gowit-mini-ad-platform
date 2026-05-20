@@ -72,3 +72,20 @@ No backend code was generated. No migration SQL was created. No tests were creat
 
 ## Backend Implementation Phase
 Backend implementation was created incrementally. Files were generated in controlled phases. The backend currently compiles with `go test ./...`. The compile check does not mean functional tests exist. No Go test files have been created yet. No race condition/concurrency test has been executed yet. No k6 test has been executed yet. No Docker setup exists yet. Migration SQL exists but has not been executed. Manual API smoke testing is planned for the validation phase.
+
+## Backend Validation
+- Backend integration tests were executed with `TEST_DATABASE_URL` against a real local PostgreSQL test database.
+- Basic integration tests passed.
+- The critical concurrency test was executed against real PostgreSQL.
+- The concurrency test scenario used:
+  - initial budget = 10
+  - 100 concurrent impression attempts
+  - accepted:true count = 10
+  - final remaining_budget = 0
+  - final total_impressions = 10
+  - final spent_budget = 10
+  - final status = paused
+- This provides backend service/repository-level evidence that the PostgreSQL atomic conditional update protects the budget from going negative under concurrent attempts.
+- Explicitly state that this is not yet HTTP-level/k6 validation.
+- Explicitly state that k6 testing is still pending.
+- Explicitly state that Docker Compose validation is still pending.
