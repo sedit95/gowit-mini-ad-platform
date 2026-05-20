@@ -33,3 +33,6 @@ The human developer is strictly controlling the scope, actively reviewing AI out
 
 ## Agent Governance Refinement
 During the scaffolding phase, the human developer directed the refinement of the agent governance files (AGENTS.md, .agents/workflows/, and .agents/skills/). These documents now explicitly define agent roles, strict workflow constraints, and skill expectations (especially regarding race condition safety). **No implementation code has been generated at this stage.**
+
+## Master Prompt Preparation
+A final master prompt was prepared before implementation started, defining the AI agent as a controlled, phase-based engineering assistant. The prompt strictly requires explicit human approval before any implementation, prevents scope expansion, and prioritizes race condition safety for `POST /impression/:id`. It explicitly rejects unsafe read-then-update logic and in-memory Go mutexes as final multi-instance-safe solutions, preferring instead a PostgreSQL-level atomic conditional update. It also mandates honest updates to `AI_WORKFLOW.md` and `ai_session` files. The prompt was delivered, the AI agent acknowledged the governance rules, and confirmed it would not implement anything without explicit approval. No backend/frontend implementation was generated during this phase.
