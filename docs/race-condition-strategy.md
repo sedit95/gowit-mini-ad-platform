@@ -3,21 +3,59 @@
 **Status:** *Pre-implementation planning phase. Implementation and tests do not exist yet.*
 
 ## The Risk
-The `POST /impression/:id` endpoint is highly susceptible to race conditions due to concurrent impression requests. Unprotected concurrent decrements could cause the campaign budget to become negative.
+The `POST /impression/:id` endpoint is the critical path. Many concurrent requests may hit the same campaign. Unprotected, unsafe read-then-update logic could cause the budget to become negative or over-count impressions.
 
 ## Forbidden Strategies
-- **Unsafe Read-Then-Update:** Reading the budget, checking it in Go, decrementing in memory, and saving back is strictly forbidden.
-- **In-Memory Go Mutex:** A standard Go mutex is rejected as the final multi-instance-safe strategy because it only protects a single backend process.
+- Reading campaign budget in Go.
+- Checking `remaining_budget` in application memory.
+- Decrementing in memory and saving later without database-level atomicity/locking.
+- In-memory Go mutex as the final multi-instance-safe solution.
 
-## Planned Strategy
-- **Preferred Direction:** PostgreSQL-level atomic conditional update. The budget decrement, impression count increment, and auto-pause status transition must happen in a single, atomic database operation.
-- **Accepted Alternative:** A PostgreSQL transaction using row-level locking (e.g., `SELECT ... FOR UPDATE`) is acceptable only if clearly justified.
+## Preferred Strategy
+- PostgreSQL atomic conditional update.
 
-## Business Logic Rules
-- A successful deduction increments `impression_count`.
-- Requests beyond the available budget must not be counted as successful impressions.
-- The campaign `status` must auto-pause immediately when `remaining_budget` reaches zero.
+### Planned SQL Shape Concept
+*Note: This is strategy documentation, not the final migration/implementation SQL.*
+```sql
+UPDATE campaigns
+SET remaining_budget = remaining_budget - 1,
+    impression_count = impression_count + 1,
+    status = CASE WHEN remaining_budget - 1 = 0 THEN 'paused' ELSE status END
+WHERE id = given_campaign_id
+  AND deleted_at IS NULL
+  AND status = 'active'
+  AND remaining_budget > 0
+RETURNING id, remaining_budget, impression_count, status
+```
 
-## Planned Validation
-- Basic Go concurrency tests.
-- k6 HTTP-level load tests.
+### Why Safe
+- PostgreSQL applies the row update atomically.
+- The `remaining_budget > 0` constraint ensures it never drops below zero.
+- Only successful atomic updates increment the `impression_count`.
+- Status naturally becomes `paused` in the exact moment `remaining_budget` hits 0.
+
+## Accepted Alternative
+- A PostgreSQL transaction using row-level locking (e.g., `SELECT ... FOR UPDATE`) is acceptable only if clearly justified. Atomic conditional update remains the preferred direction.
+
+## Failure Handling
+If the atomic update returns no row, the service may perform a read to distinguish between:
+- `not_found`
+- `soft_deleted`
+- `campaign_not_active`
+- `budget_exhausted`
+
+*This read is strictly for determining the correct response reason, not for performing the decrement.*
+
+## Expected Business Outcomes
+- **Successful deduction:** `accepted: true`
+- **Budget exhausted:** `accepted: false, reason: budget_exhausted`
+- **Not active:** `accepted: false, reason: campaign_not_active`
+- **Not found/soft deleted:** `404`
+
+## Critical Validation Target
+- `initial_budget = 10`, `remaining_budget = 10`, `status = active`
+- 100 concurrent impression attempts
+- Final `remaining_budget = 0`, final `impression_count = 10`, final `status = paused`
+- Budget never negative
+- `accepted: true` count = 10
+- `accepted: false` count = 90
