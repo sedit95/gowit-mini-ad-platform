@@ -18,3 +18,6 @@ No implementation has started yet, and no tests have been executed.
 ## AI Context Refinement Note
 
 `AI_CONTEXT.md` was sharpened after the master prompt preparation phase to better align the AI agent with the case study requirements and governance rules. The update significantly strengthened the project context, out-of-scope boundaries, race condition prevention strategy, testing expectations, and human control constraints. The project remains entirely in pre-implementation planning. No implementation code was generated and no tests were executed.
+
+## Documentation and Skill Refinement Note
+Pre-implementation documentation and skill files were refined to guide later phases. Backend, frontend, race condition, Docker Compose, k6, documentation, and `docs/` planning expectations were strengthened. The database planning now distinguishes `initial_budget` and `remaining_budget`. The project remains pre-implementation. No application code was generated. No tests were executed.
