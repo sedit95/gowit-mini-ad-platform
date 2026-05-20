@@ -82,3 +82,28 @@ Backend implementation was created incrementally. Files were generated in contro
 
 ## Frontend Planning Phase
 Frontend planning has been completed. The frontend stack will be Vite + React + TypeScript, explicitly rejecting Next.js. The application will feature a Campaign List Page, a Campaign Create Page, and a Campaign Detail + Stats Page with a 3000ms polling strategy for live stats. No WebSockets or optimistic budget decrements will be used; the backend remains the source of truth. TypeScript models and API mappings have been established. Allowed dependencies include React Router, while Redux, Axios, Formik, and Tailwind have been rejected to keep the scope narrow. Frontend implementation, HTTP-level k6 validation, and Docker validation are explicitly pending and have not started.
+
+## Frontend Implementation & Runtime Smoke Test
+Frontend implementation was completed incrementally following the plan (Campaign List, Create, Detail+Stats pages, and 3000ms stats polling).
+
+During the runtime smoke test (Frontend at `http://localhost:5173`, Backend at `http://localhost:8080`), browser CORS enforcement blocked frontend API requests, failing `POST /campaigns` during preflight.
+
+**CORS Fix performed:**
+- Added a minimal local CORS middleware in `backend/internal/http/cors.go`.
+- Registered the middleware in `backend/cmd/api/main.go` before routes.
+- Allowed origin: `http://localhost:5173`, methods: GET, POST, PUT, DELETE, OPTIONS, headers: Content-Type.
+- `OPTIONS` preflight returns HTTP 204 No Content.
+- No external CORS dependency was added, and no campaign business logic or frontend code was changed.
+
+**Validation after fix:**
+- `go test ./...` passed on the backend.
+- Both backend and frontend ran successfully.
+- List page, Campaign Create, Detail/Stats page, Record Impression, Update Campaign (without budget fields), and Delete Campaign actions all worked properly.
+- Stats polling successfully executed without issues.
+- Browser console remained clear of critical errors.
+
+**Important Boundaries:**
+- This was strictly frontend runtime smoke validation, not k6 load testing.
+- HTTP-level k6 validation is still pending.
+- Docker Compose validation is still pending.
+- The CORS fix was limited specifically to the local development frontend origin. Full system production validation is not complete.
