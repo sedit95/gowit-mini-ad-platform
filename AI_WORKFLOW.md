@@ -83,7 +83,7 @@ Backend implementation was created incrementally. Files were generated in contro
 ## Frontend Planning Phase
 Frontend planning has been completed. The frontend stack will be Vite + React + TypeScript, explicitly rejecting Next.js. The application will feature a Campaign List Page, a Campaign Create Page, and a Campaign Detail + Stats Page with a 3000ms polling strategy for live stats. No WebSockets or optimistic budget decrements will be used; the backend remains the source of truth. TypeScript models and API mappings have been established. Allowed dependencies include React Router, while Redux, Axios, Formik, and Tailwind have been rejected to keep the scope narrow. Frontend implementation, HTTP-level k6 validation, and Docker validation are explicitly pending and have not started.
 
-## Frontend Implementation & Runtime Smoke Test
+## Frontend Implementation Phase
 Frontend implementation was completed incrementally following the plan (Campaign List, Create, Detail+Stats pages, and 3000ms stats polling).
 
 During the runtime smoke test (Frontend at `http://localhost:5173`, Backend at `http://localhost:8080`), browser CORS enforcement blocked frontend API requests, failing `POST /campaigns` during preflight.
