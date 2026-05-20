@@ -24,6 +24,7 @@ The race condition risk (concurrent `/impression/:id` requests potentially causi
 
 ## Human Corrections
 - **Nested Folder Correction:** The human developer caught a repository structure issue where scaffolding was placed in an extra nested folder. The structure was flattened, and the fix was verified via PowerShell.
+- **Service Import Correction:** During Campaign Service implementation, the AI-generated `service.go` file contained an unused `time` import. The human developer detected this through compile validation using `go test ./...`. The fix was limited to removing the unused `time` import from `backend/internal/campaign/service.go`. Business logic, validation logic, and RecordImpression logic were not changed. After the correction, `go test ./...` succeeded for the existing backend packages (output showed `[no test files]`, meaning successful compilation). Human review caught and fixed an AI-generated unused import compile issue before continuing.
 
 ## Testing Evidence
 No tests have been executed yet. A specific Basic Go concurrency test and k6 load testing are planned as future validation.
